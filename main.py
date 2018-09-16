@@ -5,12 +5,12 @@ from tree import Tree
 
 
 def main():
-    file_name = './data/joga.csv'
+    file_name = './data/wine.csv'
     attributes, instances = getDataFromFile(file_name)
 
-    tree = Tree(attributes, 'Joga', instances)
+    tree = Tree(attributes, 'class', instances)
     att = tree.getBestAttribute(attributes, instances)
-    print('best = ', att)
+    print('best attribute = ', att)
     #tree.createDecisionTree()
 
 
