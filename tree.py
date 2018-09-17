@@ -129,24 +129,24 @@ class Tree(object):
         Função recursiva que cria uma árvore de decisão com base no conjunto
         'instances'
         """
-        new_node = Node()
+        node = Node()
 
         if haveSameClass(instances, target_class):
             # Se todos os exemplos do conjunto possuem a mesma classificação,
-            # retorna new_node como um nó folha rotulado com a classe
-            new_node.value = instances[target_class]
-            return new_node
+            # retorna node como um nó folha rotulado com a classe
+            node.value = instances[target_class]
+            return node
 
         if len(attributes) == 0:
-            # Se L é vazia, retorna new_node como um nó folha com a classe mais
+            # Se L é vazia, retorna node como um nó folha com a classe mais
             # frequente no conjunto de instancias
             value = getMostFrequentClass(instances, target_class)
-            new_node.value = value
-            return new_node
+            node.value = value
+            return node
         else:
             # Seleciona atributo preditivo da lista de atributos que apresenta melhor critério de divisão
             attribute = getBestAttribute(attributes)
-            new_node.value = attribute
+            node.value = attribute
 
             attributes.remove(attribute)
 
@@ -157,8 +157,12 @@ class Tree(object):
                 subset = getSubsetWithAttributeValue(attribute, attribute_value, instances)
 
                 if len(subset) == 0:
-                # Se esse subset for vazio, retorna new_node como nó folha rotulado
-                # com a classe mais frequente no conjunto
-                    pass
+                    # Se esse subset for vazio, retorna node como nó folha rotulado
+                    # com a classe mais frequente no conjunto
+                    value = getMostFrequentClass(instances, target_class)
+                    node.value = value
+                    return node
                 else:
-                    new_node.children = createDecisionTree(subset, attributes, target_class)
+                    node.children = createDecisionTree(subset, attributes, target_class)
+
+        return node
