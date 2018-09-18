@@ -9,9 +9,7 @@ def main():
     attributes, instances = getDataFromFile(file_name)
 
     tree = Tree(attributes, 'class', instances)
-    att = tree.getBestAttribute(attributes, instances)
-    print('best attribute = ', att)
-    #tree.createDecisionTree()
+    tree.createDecisionTree()
 
 
 # Retorna a lista de atributos e um dicionário de instâncias do problema
