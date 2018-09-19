@@ -174,7 +174,6 @@ class Tree(object):
         return node
 
     def printDecisionTree(self):
-        #self.printTree(self.decision_tree)
         print(self.decision_tree.value)
 
         if not self.decision_tree.children:
