@@ -1,32 +1,36 @@
 import math
 
+from node import Node
+
 class Tree(object):
     def __init__(self, attributes, target_class, instances):
         self.attributes = attributes
         self.target_class = target_class
         self.instances = instances
+        self.decision_tree = None
 
     def createDecisionTree(self):
-        decisionTree(self.instances, self.attributes, self.target_class)
+        self.decision_tree = self.decisionTree(self.instances, self.attributes, self.target_class)
 
     def getBestAttribute(self, attributes, instances):
         """
         Retorna o atributo com o maior ganho de informação, seguindo o algoritmo ID3.
         """
         # Remove a classificação de cada instância
-        attributes.remove(self.target_class)
+        attributes_copy = list(attributes)
+        attributes_copy.remove(self.target_class)
 
         original_set_entropy = self.entropy(instances, self.target_class)
-        attributes_information_gain = [0 for i in range(len(attributes))]
+        attributes_information_gain = [0 for i in range(len(attributes_copy))]
 
-        for i in range(len(attributes)):
+        for i in range(len(attributes_copy)):
             # Pega todos os valores possíveis para o atributo em questão
-            possible_values = self.getDistinctValuesForAttribute(attributes[i], instances)
+            possible_values = self.getDistinctValuesForAttribute(attributes_copy[i], instances)
             avg_entropy = 0
 
             # Calcula entropia ponderada para cada subset originado a partir do atributo
             for value in possible_values:
-                subset = self.getSubsetWithAttributeValue(attributes[i], value, instances)
+                subset = self.getSubsetWithAttributeValue(attributes_copy[i], value, instances)
                 entropy = self.entropy(subset, self.target_class)
                 weighted_entropy = float(entropy * (len(subset)/len(instances)))
                 avg_entropy = avg_entropy + weighted_entropy
@@ -36,7 +40,7 @@ class Tree(object):
 
         best_attribute_index = attributes_information_gain.index(max(attributes_information_gain))
 
-        return attributes[best_attribute_index]
+        return attributes_copy[best_attribute_index]
 
     def entropy(self, instances, target_class):
         # Medida do grau de aleatoriedade de uma variável, dada em bits
@@ -131,38 +135,54 @@ class Tree(object):
         """
         node = Node()
 
-        if haveSameClass(instances, target_class):
+        if self.haveSameClass(instances, target_class):
             # Se todos os exemplos do conjunto possuem a mesma classificação,
             # retorna node como um nó folha rotulado com a classe
-            node.value = instances[target_class]
+
+            # Pega a classe da primeira instância. Tanto faz, pois todos têm a mesma classe.
+            node.value = instances[0][target_class]
             return node
 
         if len(attributes) == 0:
             # Se L é vazia, retorna node como um nó folha com a classe mais
             # frequente no conjunto de instancias
-            value = getMostFrequentClass(instances, target_class)
+            value = self.getMostFrequentClass(instances, target_class)
             node.value = value
             return node
         else:
             # Seleciona atributo preditivo da lista de atributos que apresenta melhor critério de divisão
-            attribute = getBestAttribute(attributes)
+            attribute = self.getBestAttribute(attributes, instances)
             node.value = attribute
 
             attributes.remove(attribute)
 
             # Para cada valor V distinto do atributo em questão, considerando os exemplos da lista de instancias:
-            distinct_attribute_values = getDistinctValuesForAttribute(attribute, instances)
+            distinct_attribute_values = self.getDistinctValuesForAttribute(attribute, instances)
 
             for attribute_value in distinct_attribute_values:
-                subset = getSubsetWithAttributeValue(attribute, attribute_value, instances)
+                subset = self.getSubsetWithAttributeValue(attribute, attribute_value, instances)
 
                 if len(subset) == 0:
                     # Se esse subset for vazio, retorna node como nó folha rotulado
                     # com a classe mais frequente no conjunto
-                    value = getMostFrequentClass(instances, target_class)
+                    value = self.getMostFrequentClass(instances, target_class)
                     node.value = value
                     return node
                 else:
-                    node.children = createDecisionTree(subset, attributes, target_class)
+                    node.children.append(self.decisionTree(subset, attributes, target_class))
 
         return node
+
+    def printDecisionTree(self):
+        #self.printTree(self.decision_tree)
+        print(self.decision_tree.value)
+
+        if not self.decision_tree.children:
+            return
+
+
+        for i in range(len(self.decision_tree.children)):
+            print('\t', self.decision_tree.children[i].value)
+
+            for j in range(len(self.decision_tree.children[i].children)):
+                print('\t \t', self.decision_tree.children[i].children[j].value)

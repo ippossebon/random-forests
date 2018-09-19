@@ -1,6 +1,6 @@
 class Node(object):
 
-    def __init__(self, node_value):
+    def __init__(self, node_value=None):
         self.value = node_value
         self.children = []
 

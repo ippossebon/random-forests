@@ -5,12 +5,13 @@ from tree import Tree
 
 
 def main():
-    file_name = './data/wine.csv'
+    file_name = './data/joga.csv'
     attributes, instances = getDataFromFile(file_name)
 
-    tree = Tree(attributes, 'class', instances)
+    tree = Tree(attributes, 'Joga', instances)
     tree.createDecisionTree()
-
+    tree.printDecisionTree()
+    
 
 # Retorna a lista de atributos e um dicionário de instâncias do problema
 def getDataFromFile(file_name):
