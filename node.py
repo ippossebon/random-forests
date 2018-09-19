@@ -15,3 +15,9 @@ class Node(object):
                 return True
 
         return False
+
+    def printValueAndChildren(self):
+        print(self.value)
+
+        for i in range(len(self.children)):
+            print(self.children[i].value, end=" ")

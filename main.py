@@ -10,8 +10,8 @@ def main():
 
     tree = Tree(attributes, 'Joga', instances)
     tree.createDecisionTree()
-    tree.printDecisionTree()
-    
+    tree.printTree()
+
 
 # Retorna a lista de atributos e um dicionário de instâncias do problema
 def getDataFromFile(file_name):

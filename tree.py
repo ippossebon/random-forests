@@ -173,7 +173,11 @@ class Tree(object):
 
         return node
 
+    def printTree(self):
+        self.decision_tree.printValueAndChildren()
+
     def printDecisionTree(self):
+        #self.printTree(self.decision_tree)
         print(self.decision_tree.value)
 
         if not self.decision_tree.children:
@@ -185,3 +189,11 @@ class Tree(object):
 
             for j in range(len(self.decision_tree.children[i].children)):
                 print('\t \t', self.decision_tree.children[i].children[j].value)
+
+
+    def traverse(self, tree):
+        if tree.children:
+            for i in range(len(tree.children)):
+                return self.traverse(tree.children[i])
+        else:
+            return tree.value
