@@ -3,7 +3,8 @@ import math
 from node import Node
 
 class Tree(object):
-    def __init__(self, attributes, target_class, instances):
+    def __init__(self, attributes_type, attributes, target_class, instances):
+        self.attributes_type = attributes_type
         self.attributes = attributes
         self.target_class = target_class
         self.instances = instances
@@ -11,7 +12,15 @@ class Tree(object):
 
     def createDecisionTree(self):
         self.attributes.remove(self.target_class)
-        self.decision_tree = self.decisionTree(self.instances, self.attributes, self.target_class)
+
+        if self.attributes_type == 'cat':
+            self.decision_tree = self.decisionTreeCat(self.instances, self.attributes, self.target_class)
+        elif self.attributes_type == 'num':
+            self.decision_tree = self.decisionTreeNum(self.instances, self.attributes, self.target_class)
+        else:
+            print('Erro - Informe o tipo dos atributos.')
+            exit(1)
+
 
     def getBestAttribute(self, attributes, instances):
         """
@@ -126,10 +135,10 @@ class Tree(object):
 
         return subset
 
-    def decisionTree(self, instances, attributes, target_class, up_edge=None):
+    def decisionTreeCat(self, instances, attributes, target_class, up_edge=None):
         """
         Função recursiva que cria uma árvore de decisão com base no conjunto
-        'instances'
+        'instances' para atributos CATEGÓRICOS
         """
         node = Node()
         node.up_edge = up_edge
@@ -168,9 +177,58 @@ class Tree(object):
                     node.value = value
                     return node
                 else:
-                    node.children.append(self.decisionTree(subset, attributes, target_class, attribute_value))
+                    node.children.append(self.decisionTreeCat(subset, attributes, target_class, attribute_value))
 
         return node
+
+
+    def decisionTreeNum(self, instances, attributes, target_class, up_edge=None):
+        """
+        Função recursiva que cria uma árvore de decisão com base no conjunto
+        'instances' para atributos NUMÉRICOS
+        """
+        node = Node()
+        node.up_edge = up_edge
+
+        if self.haveSameClass(instances, target_class):
+            # Se todos os exemplos do conjunto possuem a mesma classificação,
+            # retorna node como um nó folha rotulado com a classe
+
+            # Pega a classe da primeira instância. Tanto faz, pois todos têm a mesma classe.
+            node.value = instances[0][target_class]
+            return node
+
+        if len(attributes) == 0:
+            # Se L é vazia, retorna node como um nó folha com a classe mais
+            # frequente no conjunto de instancias
+            value = self.getMostFrequentClass(instances, target_class)
+            node.value = value
+            return node
+        else:
+            # Seleciona atributo preditivo da lista de atributos que apresenta melhor critério de divisão
+            attribute = self.getBestAttribute(attributes, instances)
+            node.value = attribute
+
+            attributes.remove(attribute)
+
+            # Para cada valor V distinto do atributo em questão, considerando os exemplos da lista de instancias:
+            distinct_attribute_values = self.getDistinctValuesForAttribute(attribute, instances)
+
+            # Define-se um ponto de corte, gerando dois subconjuntos disjuntos de acordo com testes
+            # A <= threshold e A > threshold.
+            # Para obter um ponto de corte, ordena a lista de valores possíveis do atributo e
+            # toma o ponto médio entre 2 exemplos consecutivos (a_i + a_(i+1))/2 como um possível
+            # ponto de corte a ser avaliado pelo critério de seleção. Apenas valores que dividem
+            # exemplos de classes diferentes precisam de fato ser avaliados.
+            distinct_attribute_values.sort()
+
+            possible_threshold = -1
+            for i in xrange(0, len(distinct_attribute_values)-1, 2):
+                possible_threshold = distinct_attribute_values[i] + distinct_attribute_values[i+1]
+
+
+
+
 
 
     def printDecisionTree(self):

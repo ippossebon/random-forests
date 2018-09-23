@@ -3,12 +3,17 @@ import csv
 from node import Node
 from tree import Tree
 
+"""
+attributes_type = 'num' se os atributos são numéricos
+attributes_type = 'cat' se os atributos são categóricos
+
+"""
 
 def main():
-    file_name = './data/breast-cancer-without-id.csv'
+    file_name = './data/wine.csv'
     attributes, instances = getDataFromFile(file_name)
 
-    tree = Tree(attributes, 'class', instances)
+    tree = Tree('cat', attributes, 'class', instances)
     tree.createDecisionTree()
     tree.printDecisionTree()
 
