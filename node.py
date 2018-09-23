@@ -1,13 +1,9 @@
 class Node(object):
 
-    def __init__(self, node_value=None):
+    def __init__(self, node_value=None, node_top_edge=None):
         self.value = node_value
+        self.top_edge = node_top_edge
         self.children = []
-
-    def createChild(self, node_value):
-        node = Node(node_value)
-        self.children.append(node)
-        return node
 
     def hasChild(self, c):
         for child in self.children:
@@ -15,9 +11,3 @@ class Node(object):
                 return True
 
         return False
-
-    def printValueAndChildren(self):
-        print(self.value)
-
-        for i in range(len(self.children)):
-            print(self.children[i].value, end=" ")

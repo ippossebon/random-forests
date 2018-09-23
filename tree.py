@@ -128,12 +128,13 @@ class Tree(object):
 
         return subset
 
-    def decisionTree(self, instances, attributes, target_class):
+    def decisionTree(self, instances, attributes, target_class, up_edge=None):
         """
         Função recursiva que cria uma árvore de decisão com base no conjunto
         'instances'
         """
         node = Node()
+        node.up_edge = up_edge
 
         if self.haveSameClass(instances, target_class):
             # Se todos os exemplos do conjunto possuem a mesma classificação,
@@ -169,26 +170,27 @@ class Tree(object):
                     node.value = value
                     return node
                 else:
-                    node.children.append(self.decisionTree(subset, attributes, target_class))
+                    node.children.append(self.decisionTree(subset, attributes, target_class, attribute_value))
 
         return node
 
-    def printTree(self):
-        self.decision_tree.printValueAndChildren()
 
     def printDecisionTree(self):
-        #self.printTree(self.decision_tree)
-        print(self.decision_tree.value)
-
-        if not self.decision_tree.children:
-            return
+        self.printTree(self.decision_tree)
 
 
-        for i in range(len(self.decision_tree.children)):
-            print('\t', self.decision_tree.children[i].value)
+    def printTree(self, tree, level=0):
+        if tree.up_edge:
+            print('    ' * (level - 1) + '+---' * (level > 0) + '[' + tree.up_edge + ']' + tree.value)
+        else:
+            print('    ' * (level - 1) + '+---' * (level > 0) + tree.value)
 
-            for j in range(len(self.decision_tree.children[i].children)):
-                print('\t \t', self.decision_tree.children[i].children[j].value)
+
+        for i in range(len(tree.children)):
+            if type(tree.children[i]) is Node:
+                self.printTree(tree.children[i], level + 1)
+            else:
+                print('    ' * level + '+---' + tree.children[i].value)
 
 
     def traverse(self, tree):
