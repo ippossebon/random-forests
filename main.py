@@ -5,7 +5,7 @@ from tree import Tree
 
 
 def main():
-    file_name = './data/wine.csv'
+    file_name = './data/breast-cancer-without-id.csv'
     attributes, instances = getDataFromFile(file_name)
 
     tree = Tree(attributes, 'class', instances)

@@ -10,27 +10,25 @@ class Tree(object):
         self.decision_tree = None
 
     def createDecisionTree(self):
+        self.attributes.remove(self.target_class)
         self.decision_tree = self.decisionTree(self.instances, self.attributes, self.target_class)
 
     def getBestAttribute(self, attributes, instances):
         """
         Retorna o atributo com o maior ganho de informação, seguindo o algoritmo ID3.
         """
-        # Remove a classificação de cada instância
-        attributes_copy = list(attributes)
-        attributes_copy.remove(self.target_class)
 
         original_set_entropy = self.entropy(instances, self.target_class)
-        attributes_information_gain = [0 for i in range(len(attributes_copy))]
+        attributes_information_gain = [0 for i in range(len(attributes))]
 
-        for i in range(len(attributes_copy)):
+        for i in range(len(attributes)):
             # Pega todos os valores possíveis para o atributo em questão
-            possible_values = self.getDistinctValuesForAttribute(attributes_copy[i], instances)
+            possible_values = self.getDistinctValuesForAttribute(attributes[i], instances)
             avg_entropy = 0
 
             # Calcula entropia ponderada para cada subset originado a partir do atributo
             for value in possible_values:
-                subset = self.getSubsetWithAttributeValue(attributes_copy[i], value, instances)
+                subset = self.getSubsetWithAttributeValue(attributes[i], value, instances)
                 entropy = self.entropy(subset, self.target_class)
                 weighted_entropy = float(entropy * (len(subset)/len(instances)))
                 avg_entropy = avg_entropy + weighted_entropy
@@ -40,7 +38,7 @@ class Tree(object):
 
         best_attribute_index = attributes_information_gain.index(max(attributes_information_gain))
 
-        return attributes_copy[best_attribute_index]
+        return attributes[best_attribute_index]
 
     def entropy(self, instances, target_class):
         # Medida do grau de aleatoriedade de uma variável, dada em bits
@@ -78,7 +76,7 @@ class Tree(object):
             else:
                 class_values[value] = 1
 
-        return getItemWithMaxValue(class_values)
+        return self.getItemWithMaxValue(class_values)
 
 
     def getItemWithMaxValue(self, items):
