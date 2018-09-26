@@ -10,17 +10,23 @@ attributes_type = 'cat' se os atributos são categóricos
 """
 
 def main():
-    file_name = './data/wine.csv'
+    file_name = './data/joga.csv'
     attributes, attributes_types, instances = getDataFromFile(file_name)
 
-    tree = Tree(attributes, attributes_types, 'class', instances)
+    tree = Tree(attributes, attributes_types, 'Joga', instances)
     tree.createDecisionTree()
     tree.printDecisionTree()
 
-    # Preve a classe de cada nova instancia informada
-    # for instance in range(len(new_instances)):
-	#        predict(attributes, instance, tree)
+    new_instance_file = './data/new_data.csv'
 
+    attributes, attributes_types, new_instances = getDataFromFile(new_instance_file)
+
+    print(new_instance)
+
+    # Preve a classe de cada nova instancia informada  
+    for instance in range(len(new_instances)):
+        print('Aqui')
+        predict(attributes, instance, tree)
 
 def getBootstrap(training_data, size):
     pass
@@ -51,7 +57,6 @@ def majorityVoting(instance, forest):
             predictions[predicted_class] = predictions[predicted_class] + 1
 
     return max(predictions, key=predictions.get)
-
 
 
 # Retorna a lista de atributos e um dicionário de instâncias do problema
@@ -88,14 +93,16 @@ def getDataFromFile(file_name):
 # Classifica uma nova instancia de acordo com a arvore de decisao
 def predict(attributes, instance, tree, default_class = None):
     if not tree:
-        return default_class
+       return 'Oi' + default_class
 
     attribute_index = list(tree.keys())[0]
     attribute_values = list(tree.values())[0]
     instance_attribute_value = instance[attribute_index]
 
+    print('Oi')
+
     if instance_attribute_value not in attribute_values:
-        return default_class
+       return 'Aqui' + default_class
 
     return self._predict(attribute_values[instance_attribute_value],
                          instance, default_class)
