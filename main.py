@@ -18,8 +18,8 @@ def main():
     tree.printDecisionTree()
 
     # Preve a classe de cada nova instancia informada
-    for instance in range(len(new_instances)):
-		predict(attributes, instance, tree)
+    # for instance in range(len(new_instances)):
+	#        predict(attributes, instance, tree)
 
 
 def getBootstrap(training_data, size):
