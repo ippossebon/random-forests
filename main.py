@@ -24,8 +24,8 @@ def main():
     #print(new_instance)
 
     # Preve a classe de cada nova instancia informada
-    for instance in range(len(instances)):
-        predict(attributes, instance, tree)
+    for instance in instances:
+        predict(tree, instance)
 
 def getBootstrap(training_data, size):
     pass
@@ -88,7 +88,6 @@ def getDataFromFile(file_name):
 
     return attributes, attributes_types, instances
 
-
 # Classifica uma nova instancia de acordo com a arvore de decisao
 def predict(tree, instance):
     # Precisa verificar se um nodo filho ou eh um terminal com a classe para retornar
@@ -100,16 +99,21 @@ def predict(tree, instance):
     # Verifica se o valor da instancia eh menor que o nodo atual (atributos numericos)
     # ou se o valor da instancia eh diferente do nodo atual (atributos categoricos)
 
-    if (instance[tree.node[index]] < tree.node[value]) || (instance[tree.node[index]] != tree.node[value]):
-		if isinstance(tree.node[left], dict):
-			return predict(tree.node[left], instance)
-		else:
-			return tree.node[left]
-	else:
-		if isinstance(tree.node[right], dict):
-			return predict(tree.node[right], instance)
-		else:
-			return tree.node[right]
+    # 1 - Verificar se o top edge do nodo ta presente na instancias
+    # 2 - Caso sim, verificar se o nodo atual possui filhos
+    # 3 - Caso esteja presente, segue pro filho mais a esquerda
+
+    for i in range(len(tree.decision_tree.children)):
+        if (type(tree.decision_tree.children[i]) is Node):
+            # esse eh o no raiz
+            print(tree.decision_tree.value)
+            value = tree.decision_tree.children[i].top_edge
+            if  value in instance:
+                predict(tree.decision_tree.children[i], instance)
+        else:
+            print('AQUI')
+            return tree.children[i].value
+
 
 if __name__ == '__main__':
     main()
