@@ -255,7 +255,22 @@ class Tree(object):
                 attribute = tree.value
                 attribute_value = tree.children[i].top_edge
 
-                if instance[attribute] == attribute_value:
-                    return self.predict(tree.children[i], instance)
+                if self.attributes_types[attribute] == 'n':
+                    # atributo numerico
+                    operator, num = attribute_value.split(' ')
+
+                    if operator == '<=':
+                        if instance[attribute] <= attribute_value:
+                            # return self.predict()
+                            print('a')
+                    else:
+                        if instance[attribute] > attribute_value:
+                            # return self.predict()
+                            print('a')
+
+                else:
+                    # atributo categórico
+                    if instance[attribute] == attribute_value:
+                        return self.predict(tree.children[i], instance)
         else:
             return tree.value

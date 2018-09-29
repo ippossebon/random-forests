@@ -10,10 +10,10 @@ attributes_type = 'cat' se os atributos são categóricos
 """
 
 def main():
-    file_name = './data/joga.csv'
+    file_name = './data/wine.csv'
     attributes, attributes_types, instances = getDataFromFile(file_name)
 
-    tree = Tree(attributes, attributes_types, 'Joga', instances)
+    tree = Tree(attributes, attributes_types, 'class', instances)
     tree.createDecisionTree()
     # tree.printDecisionTree()
 
@@ -26,8 +26,8 @@ def main():
     instances_copy = list(instances)
 
     for instance in instances_copy:
-        correct_class = instance['Joga']
-        instance.pop('Joga')
+        correct_class = instance['class']
+        instance.pop('class')
         predicted_class = tree.classify(instance)
         print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
 
@@ -92,7 +92,7 @@ def getDataFromFile(file_name):
         attributes_types[attributes[i]] = types[i]
 
     return attributes, attributes_types, instances
-# 
+#
 # # Classifica uma nova instancia de acordo com a arvore de decisao
 # def predict(tree, instance):
 #     # Precisa verificar se um nodo filho ou eh um terminal com a classe para retornar
