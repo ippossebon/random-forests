@@ -10,6 +10,7 @@ class Tree(object):
         self.target_class = target_class
         self.instances = instances
         self.decision_tree = None
+        self.predicted_class = None
 
     def createDecisionTree(self):
         self.attributes.remove(self.target_class)
@@ -142,13 +143,13 @@ class Tree(object):
 
         return random_attributes
 
-    def decisionTree(self, instances, attributes, target_class, up_edge=None):
+    def decisionTree(self, instances, attributes, target_class, top_edge=None):
         """
         Função recursiva que cria uma árvore de decisão com base no conjunto
         'instances' para atributos CATEGÓRICOS
         """
         node = Node()
-        node.up_edge = up_edge
+        node.top_edge = top_edge
 
         if self.haveSameClass(instances, target_class):
             # Se todos os exemplos do conjunto possuem a mesma classificação,
@@ -168,8 +169,10 @@ class Tree(object):
             # Seleciona m atributos aleatórios e escolhe o melhor
             # ! IMPORTANTE: para demonstrar que o algoritmo de indução de árvores funciona,
             # deve selecionar entre TODOS os atributos, e não apenas entre aleatórios
-            random_attributes = self.getRandomAttributes(attributes)
-            attribute = self.getBestAttribute(random_attributes, instances)
+
+            # random_attributes = self.getRandomAttributes(attributes)
+            # attribute = self.getBestAttribute(random_attributes, instances)
+            attribute = self.getBestAttribute(attributes, instances)
             node.value = attribute
 
             attributes.remove(attribute)
@@ -222,8 +225,8 @@ class Tree(object):
 
 
     def printTree(self, tree, level=0):
-        if tree.up_edge:
-            print('    ' * (level - 1) + '+---' * (level > 0) + '[' + tree.up_edge + ']' + tree.value)
+        if tree.top_edge:
+            print('    ' * (level - 1) + '+---' * (level > 0) + '[' + tree.top_edge + ']' + tree.value)
         else:
             print('    ' * (level - 1) + '+---' * (level > 0) + tree.value)
 
@@ -239,5 +242,20 @@ class Tree(object):
         if tree.children:
             for i in range(len(tree.children)):
                 return self.traverse(tree.children[i])
+        else:
+            return tree.value
+
+    def classify(self, instance):
+        return self.predict(self.decision_tree, instance)
+
+
+    def predict(self, tree, instance):
+        if len(tree.children) > 0:
+            for i in range(len(tree.children)):
+                attribute = tree.value
+                attribute_value = tree.children[i].top_edge
+
+                if instance[attribute] == attribute_value:
+                    return self.predict(tree.children[i], instance)
         else:
             return tree.value
