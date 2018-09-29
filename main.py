@@ -1,4 +1,5 @@
 import csv
+import random
 
 from node import Node
 from tree import Tree
@@ -17,12 +18,6 @@ def main():
     tree.createDecisionTree()
     # tree.printDecisionTree()
 
-    #new_instance_file = './data/new_data.csv'
-
-    #attributes, attributes_types, new_instances = getDataFromFile(new_instance_file)
-
-    #print(new_instance)
-
     instances_copy = list(instances)
 
     for instance in instances_copy:
@@ -32,20 +27,34 @@ def main():
         print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
 
 
-def getBootstrap(training_data, size):
-    pass
+def getBootstrap(original_data_set, size):
+    validation_set = list(original_data_set)
+    training_set = []
+
+    for i in range(size):
+        index = random.randint(0, len(original_data_set)-1)
+        training_set.append(original_data_set[index])
+
+        # todas as instâncias não selecionadas são usadas como conjunto de teste
+        validation_set.remove(original_data_set[index])
+
+    return training_set, validation_set
 
 
-def generateRandomForest(trees_count, bootstrap_size, training_data):
+def randomForest(trees_count, bootstrap_size, training_data):
     forest = []
 
     for i in range(trees_count):
-        bootstrap = getBootstrap(training_data, bootstrap_size)
-        tree = Tree(attributes, 'class', bootstrap)
+        training_set, validation_set = getBootstrap(training_data, bootstrap_size)
+        tree = Tree(attributes, 'class', training_set)
         tree.createDecisionTree()
         forest.append(tree)
 
     return forest
+
+
+def stratifiedCrossValidation(original_data_set):
+    pass
 
 
 def majorityVoting(instance, forest):
@@ -92,32 +101,6 @@ def getDataFromFile(file_name):
         attributes_types[attributes[i]] = types[i]
 
     return attributes, attributes_types, instances
-#
-# # Classifica uma nova instancia de acordo com a arvore de decisao
-# def predict(tree, instance):
-#     # Precisa verificar se um nodo filho ou eh um terminal com a classe para retornar
-#     # ou se eh um nodo dicionario com outro nivel da arvore para explorar
-#
-#     # O index e valor de um nodo eh usado para verificar se a informacao da instancia
-#     # vai para o lado esquerdo ou direito da divisao da arvore
-#
-#     # Verifica se o valor da instancia eh menor que o nodo atual (atributos numericos)
-#     # ou se o valor da instancia eh diferente do nodo atual (atributos categoricos)
-#
-#     # 1 - Verificar se o top edge do nodo ta presente na instancias
-#     # 2 - Caso sim, verificar se o nodo atual possui filhos
-#     # 3 - Caso esteja presente, segue pro filho mais a esquerda
-#
-#     for i in range(len(tree.decision_tree.children)):
-#         if (type(tree.decision_tree.children[i]) is Node):
-#             # esse eh o no raiz
-#             print(tree.decision_tree.value)
-#             value = tree.decision_tree.children[i].top_edge
-#             if  value in instance:
-#                 predict(tree.decision_tree.children[i], instance)
-#         else:
-#             print('AQUI')
-#             return tree.children[i].value
 
 
 if __name__ == '__main__':

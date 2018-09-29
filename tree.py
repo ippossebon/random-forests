@@ -170,9 +170,9 @@ class Tree(object):
             # ! IMPORTANTE: para demonstrar que o algoritmo de indução de árvores funciona,
             # deve selecionar entre TODOS os atributos, e não apenas entre aleatórios
 
-            # random_attributes = self.getRandomAttributes(attributes)
-            # attribute = self.getBestAttribute(random_attributes, instances)
-            attribute = self.getBestAttribute(attributes, instances)
+            random_attributes = self.getRandomAttributes(attributes)
+            attribute = self.getBestAttribute(random_attributes, instances)
+            # attribute = self.getBestAttribute(attributes, instances)
             node.value = attribute
 
             attributes.remove(attribute)
@@ -238,13 +238,6 @@ class Tree(object):
                 print('    ' * level + '+---' + tree.children[i].value)
 
 
-    def traverse(self, tree):
-        if tree.children:
-            for i in range(len(tree.children)):
-                return self.traverse(tree.children[i])
-        else:
-            return tree.value
-
     def classify(self, instance):
         return self.predict(self.decision_tree, instance)
 
@@ -260,14 +253,12 @@ class Tree(object):
                     operator, num = attribute_value.split(' ')
 
                     if operator == '<=':
-                        if instance[attribute] <= attribute_value:
-                            # return self.predict()
-                            print('a')
-                    else:
-                        if instance[attribute] > attribute_value:
-                            # return self.predict()
-                            print('a')
+                        if instance[attribute] <= num:
+                            return self.predict(tree.children[0], instance)
 
+                    else:
+                        if instance[attribute] > num:
+                            return self.predict(tree.children[1], instance)
                 else:
                     # atributo categórico
                     if instance[attribute] == attribute_value:
