@@ -18,25 +18,21 @@ def main():
     tree.createDecisionTree()
     # tree.printDecisionTree()
 
-    instances_copy = list(instances)
 
-    for instance in instances_copy:
-        correct_class = instance['class']
-        instance.pop('class')
-        predicted_class = tree.classify(instance)
-        print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
+    folds = getKStratifiedFolds(original_data_set, k)
+    crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size, b, k)
 
 
-def getBootstrap(original_data_set, size):
-    validation_set = list(original_data_set)
+def getBootstrap(data_set, size):
+    validation_set = list(data_set)
     training_set = []
 
     for i in range(size):
-        index = random.randint(0, len(original_data_set)-1)
-        training_set.append(original_data_set[index])
+        index = random.randint(0, len(data_set)-1)
+        training_set.append(data_set[index])
 
         # todas as instâncias não selecionadas são usadas como conjunto de teste
-        validation_set.remove(original_data_set[index])
+        validation_set.remove(data_set[index])
 
     return training_set, validation_set
 
@@ -52,24 +48,67 @@ def randomForest(trees_count, bootstrap_size, training_data):
 
     return forest
 
+def getClassesSubsets(target_class, data):
+    distinct_values = []
+    for instance in data:
+        if instance[target_class] not in distinct_values:
+            distinct_values.append(instance[target_class])
 
-def stratifiedCrossValidation(original_data_set):
-    pass
+
+    class_subsets = {}
+    for value in distinct_values:
+        for instance in data:
+            if instance[target_class] == value:
+                class_subsets[value].append(instance)
+
+    return class_subsets
 
 
-def majorityVoting(instance, forest):
-    # retorna a classe predita pela maioria das árvores
-    predictions = {}
 
-    for i in range(len(forest)):
-        predicted_class = forest[i].classify(instance)
+def getKStratifiedFolds(original_data_set, target_class, k):
+    instances_by_class = getClassesSubsets(target_class, data)
+    
 
-        if predicted_class not in predictions.keys():
-            predictions[predicted_class] = 1
-        else:
-            predictions[predicted_class] = predictions[predicted_class] + 1
 
-    return max(predictions, key=predictions.get)
+
+def crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size, b, k):
+    for i in range(k):
+        training_set = list(folds)
+        training_set.remove(folds[i])
+
+        test_test = folds[i]
+        forest = []
+
+        for b in range(b):
+            bootstrap = getBootstrap(training_set, bootstrap_size)
+            tree = Tree(attributes, attributes_types, target_class, bootstrap)
+            tree.createDecisionTree()
+
+            forest.append(tree)
+
+        # Usa o ensemble de B arvores para prever as instancias do fold i
+        # (fold de teste) e avaliar desempenho do algoritmo (calcular Fmeasure)
+        evaluateForest(forest, test_test)
+
+
+def evaluateForest(forest, test_test, target_class):
+    instances_copy = list(test_test)
+
+    for instance in instances_copy:
+        correct_class = test_test[target_class]
+        test_test.pop(target_class)
+        predicted_class = forestPredict(forest, instance)
+        print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
+
+
+def forestPredict(instance, forest):
+    predictions = []
+
+    for tree in forest:
+        predictions.append(tree.classify(instance))
+
+    most_frequent_class = max(set(predictions), key=predictions.count)
+    return most_frequent_class
 
 
 # Retorna a lista de atributos e um dicionário de instâncias do problema
