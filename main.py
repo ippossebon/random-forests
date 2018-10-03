@@ -5,8 +5,8 @@ from node import Node
 from tree import Tree
 
 """
-attributes_type = 'num' se os atributos são numéricos
-attributes_type = 'cat' se os atributos são categóricos
+attributes_type = 'n' se os atributos são numéricos
+attributes_type = 'c' se os atributos são categóricos
 
 """
 
@@ -67,7 +67,7 @@ def getClassesSubsets(target_class, data):
 
 def getKStratifiedFolds(original_data_set, target_class, k):
     instances_by_class = getClassesSubsets(target_class, data)
-    
+
 
 
 
