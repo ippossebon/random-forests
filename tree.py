@@ -13,7 +13,8 @@ class Tree(object):
         self.predicted_class = None
 
     def createDecisionTree(self):
-        self.attributes.remove(self.target_class)
+        if self.target_class in self.attributes:
+            self.attributes.remove(self.target_class)
         self.decision_tree = self.decisionTree(self.instances, self.attributes, self.target_class)
 
     def getBestAttribute(self, attributes, instances):

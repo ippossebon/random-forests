@@ -12,41 +12,22 @@ attributes_type = 'c' se os atributos são categóricos
 
 def main():
     file_name = './data/wine.csv'
+    target_class = 'class'
     attributes, attributes_types, instances = getDataFromFile(file_name)
 
-    tree = Tree(attributes, attributes_types, 'class', instances)
-    tree.createDecisionTree()
-    # tree.printDecisionTree()
-
-
-    folds = getKStratifiedFolds(original_data_set, k)
-    crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size, b, k)
+    folds = getKStratifiedFolds(instances, 'class', k=10)
+    crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size=10, b=5, k=10)
 
 
 def getBootstrap(data_set, size):
-    validation_set = list(data_set)
-    training_set = []
+    bootstrap = []
 
     for i in range(size):
         index = random.randint(0, len(data_set)-1)
-        training_set.append(data_set[index])
+        bootstrap.append(data_set[index])
 
-        # todas as instâncias não selecionadas são usadas como conjunto de teste
-        validation_set.remove(data_set[index])
+    return bootstrap
 
-    return training_set, validation_set
-
-
-def randomForest(trees_count, bootstrap_size, training_data):
-    forest = []
-
-    for i in range(trees_count):
-        training_set, validation_set = getBootstrap(training_data, bootstrap_size)
-        tree = Tree(attributes, 'class', training_set)
-        tree.createDecisionTree()
-        forest.append(tree)
-
-    return forest
 
 def getClassesSubsets(target_class, data):
     distinct_values = []
@@ -54,29 +35,52 @@ def getClassesSubsets(target_class, data):
         if instance[target_class] not in distinct_values:
             distinct_values.append(instance[target_class])
 
-
     class_subsets = {}
     for value in distinct_values:
         for instance in data:
             if instance[target_class] == value:
+                if value not in class_subsets:
+                    class_subsets[value] = []
                 class_subsets[value].append(instance)
 
     return class_subsets
 
 
+def getKStratifiedFolds(data_set, target_class, k):
+    instances_by_class = getClassesSubsets(target_class, data_set)
+    folds = [None] * k
 
-def getKStratifiedFolds(original_data_set, target_class, k):
-    instances_by_class = getClassesSubsets(target_class, data)
+    # Inicializa a lista de folds
+    for i in range(k):
+        folds[i] = []
+
+    for class_value in instances_by_class:
+        # pega K valores deste subset
+        instance_index = 0
+        for instance in instances_by_class[class_value]:
+            fold_index = instance_index % k
+            folds[fold_index].append(instance)
+            instance_index = instance_index + 1
+
+    return folds
 
 
+def transformToList(list_of_lists):
+    new_list = []
+    for l in list_of_lists:
+        for value in l:
+            new_list.append(value)
+
+    return new_list
 
 
 def crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size, b, k):
     for i in range(k):
-        training_set = list(folds)
-        training_set.remove(folds[i])
+        training_set_folds = list(folds)
+        training_set_folds.remove(folds[i])
+        training_set = transformToList(training_set_folds)
 
-        test_test = folds[i]
+        test_set = folds[i]
         forest = []
 
         for b in range(b):
@@ -88,20 +92,20 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
 
         # Usa o ensemble de B arvores para prever as instancias do fold i
         # (fold de teste) e avaliar desempenho do algoritmo (calcular Fmeasure)
-        evaluateForest(forest, test_test)
+        evaluateForest(forest, test_set, target_class)
 
 
-def evaluateForest(forest, test_test, target_class):
-    instances_copy = list(test_test)
+def evaluateForest(forest, test_set, target_class):
+    instances_copy = list(test_set)
 
     for instance in instances_copy:
-        correct_class = test_test[target_class]
-        test_test.pop(target_class)
+        correct_class = instance[target_class]
+        instance.pop(target_class)
         predicted_class = forestPredict(forest, instance)
         print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
 
 
-def forestPredict(instance, forest):
+def forestPredict(forest, instance):
     predictions = []
 
     for tree in forest:
