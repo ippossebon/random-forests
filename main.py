@@ -16,7 +16,7 @@ def main():
     attributes, attributes_types, instances = getDataFromFile(file_name)
 
     folds = getKStratifiedFolds(instances, 'class', k=10)
-    crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size=10, b=5, k=10)
+    crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size=10, b=10, k=10)
 
 
 def getBootstrap(data_set, size):
@@ -92,6 +92,11 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
 
         # Usa o ensemble de B arvores para prever as instancias do fold i
         # (fold de teste) e avaliar desempenho do algoritmo (calcular Fmeasure)
+
+        ### se b < k, dá erro... o que deveria acontecer?
+        # if len(forest) == 0:
+        #     import ipdb; ipdb.set_trace()
+        #     print('a')
         evaluateForest(forest, test_set, target_class)
 
 
@@ -100,7 +105,6 @@ def evaluateForest(forest, test_set, target_class):
 
     for instance in instances_copy:
         correct_class = instance[target_class]
-        instance.pop(target_class)
         predicted_class = forestPredict(forest, instance)
         print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
 
@@ -113,6 +117,19 @@ def forestPredict(forest, instance):
 
     most_frequent_class = max(set(predictions), key=predictions.count)
     return most_frequent_class
+
+
+def accuracy(true_positives, true_negatives, false_positives, false_negatives):
+    return double((true_positives + true_negatives)/(true_positives + true_negatives + false_positives + false_negatives))
+
+def recall(true_positives, false_negatives):
+    return double((true_positives)/(true_positives + false_negatives))
+
+def precision(true_positives, false_positives):
+    return double((true_positives)/(true_positives + false_positives))
+
+def f1Measure(precision, recall):
+    return 2*((precision*recall)/(precision+recall))
 
 
 # Retorna a lista de atributos e um dicionário de instâncias do problema

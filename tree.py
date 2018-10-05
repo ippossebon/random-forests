@@ -15,6 +15,7 @@ class Tree(object):
     def createDecisionTree(self):
         if self.target_class in self.attributes:
             self.attributes.remove(self.target_class)
+
         self.decision_tree = self.decisionTree(self.instances, self.attributes, self.target_class)
 
     def getBestAttribute(self, attributes, instances):
