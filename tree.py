@@ -153,9 +153,8 @@ class Tree(object):
         node = Node()
         node.top_edge = top_edge
 
-        # if len(instances) == 0:
-        #     import ipdb; ipdb.set_trace()
-        #     print('a')
+        if len(instances) == 0:
+            return node
 
         if self.haveSameClass(instances, target_class):
             # Se todos os exemplos do conjunto possuem a mesma classificação,

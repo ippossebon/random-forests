@@ -11,8 +11,8 @@ attributes_type = 'c' se os atributos são categóricos
 """
 
 def main():
-    file_name = './data/joga.csv'
-    target_class = 'Joga'
+    file_name = './data/wdbc-without-id.csv'
+    target_class = 'class'
 
     attributes, attributes_types, instances = getDataFromFile(file_name)
     class_distinct_values = getClassDistinctValues(target_class, instances)
@@ -24,9 +24,9 @@ def main():
         target_class,
         class_distinct_values,
         folds,
-        bootstrap_size=5,
+        bootstrap_size=10,
         b=20,
-        k=5
+        k=10
     )
 
 
@@ -75,6 +75,11 @@ def getKStratifiedFolds(data_set, target_class, k):
             fold_index = instance_index % k
             folds[fold_index].append(instance)
             instance_index = instance_index + 1
+
+    if [] in folds:
+        # k é muito pequeno!
+        print('ERRO: o valor de K é muito pequeno para este data set.')
+        exit(1)
 
     return folds
 
@@ -226,7 +231,12 @@ def getDataFromFile(file_name):
             else:
                 instance = {}
                 for i in range(len(attributes)):
-                    instance[attributes[i]] = row[i]
+                    try:
+                        instance[attributes[i]] = row[i]
+                    except Exception as e:
+                        import ipdb; ipdb.set_trace()
+                        print('a')
+
 
                 instances.append(instance)
             line_count = line_count + 1
