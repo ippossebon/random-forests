@@ -11,7 +11,9 @@ attributes_type = 'c' se os atributos são categóricos
 """
 
 def main():
-    file_name = './data/wdbc-without-id.csv'
+    #showDecisionTreeCorrectness()
+
+    file_name = './data/wine.csv'
     target_class = 'class'
 
     attributes, attributes_types, instances = getDataFromFile(file_name)
@@ -28,6 +30,18 @@ def main():
         b=20,
         k=10
     )
+
+def showDecisionTreeCorrectness():
+    file_name = './data/joga.csv'
+    target_class = 'Joga'
+
+    attributes, attributes_types, instances = getDataFromFile(file_name)
+    class_distinct_values = getClassDistinctValues(target_class, instances)
+
+    tree = Tree(attributes, attributes_types, target_class, instances)
+    tree.createDecisionTree()
+    tree.printDecisionTree()
+
 
 
 def getBootstrap(data_set, size):
@@ -144,7 +158,6 @@ def evaluateForest(forest, test_set, target_class, class_distinct_values):
     false_positives = {}
     true_negatives = {}
     false_negatives = {}
-    # +, 0, -
 
     for instance in instances_copy:
         for value in class_distinct_values:

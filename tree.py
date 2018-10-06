@@ -43,7 +43,7 @@ class Tree(object):
 
         best_attribute_index = attributes_information_gain.index(max(attributes_information_gain))
 
-        return attributes[best_attribute_index]
+        return attributes[best_attribute_index], max(attributes_information_gain)
 
     def entropy(self, instances, target_class):
         # Medida do grau de aleatoriedade de uma variável, dada em bits
@@ -176,9 +176,10 @@ class Tree(object):
             # deve selecionar entre TODOS os atributos, e não apenas entre aleatórios
 
             random_attributes = self.getRandomAttributes(attributes)
-            attribute = self.getBestAttribute(random_attributes, instances)
-            # attribute = self.getBestAttribute(attributes, instances)
+            # attribute, info_gain = self.getBestAttribute(random_attributes, instances)
+            attribute, info_gain = self.getBestAttribute(attributes, instances)
             node.value = attribute
+            node.info_gain = info_gain
 
             attributes.remove(attribute)
 
@@ -230,10 +231,14 @@ class Tree(object):
 
 
     def printTree(self, tree, level=0):
-        if tree.top_edge:
-            print('    ' * (level - 1) + '+---' * (level > 0) + '[' + tree.top_edge + ']' + tree.value)
+        if tree.top_edge and tree.info_gain != None:
+            print('    ' * (level - 1) + '+---' * (level > 0) + '[' + tree.top_edge + '(INFO_GAIN = ' + str(tree.info_gain) + ')' + ']' + '--' + tree.value)
+        elif tree.top_edge:
+            print('    ' * (level - 1) + '+---' * (level > 0) + '[' + tree.top_edge + ']' + '--' + tree.value)
+        elif tree.info_gain != None:
+            print('    ' * (level - 1) + '+---' * (level > 0) + '--' + tree.value + '(INFO_GAIN = ' + str(tree.info_gain) + ')' )
         else:
-            print('    ' * (level - 1) + '+---' * (level > 0) + tree.value)
+            print('    ' * (level - 1) + '+---' * (level > 0) + '--' + tree.value)
 
 
         for i in range(len(tree.children)):

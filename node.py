@@ -4,6 +4,7 @@ class Node(object):
         self.value = node_value
         self.top_edge = node_top_edge
         self.children = []
+        self.info_gain = None
 
     def hasChild(self, c):
         for child in self.children:
