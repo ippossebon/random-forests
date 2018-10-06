@@ -11,12 +11,12 @@ attributes_type = 'c' se os atributos são categóricos
 """
 
 def main():
-    file_name = './data/wine.csv'
-    target_class = 'class'
+    file_name = './data/joga.csv'
+    target_class = 'Joga'
     attributes, attributes_types, instances = getDataFromFile(file_name)
 
-    folds = getKStratifiedFolds(instances, 'class', k=10)
-    crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size=10, b=10, k=10)
+    folds = getKStratifiedFolds(instances, target_class, k=10)
+    crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size=10, b=20, k=10)
 
 
 def getBootstrap(data_set, size):
@@ -28,12 +28,15 @@ def getBootstrap(data_set, size):
 
     return bootstrap
 
-
-def getClassesSubsets(target_class, data):
+def getClassDistinctValues(target_class, data):
     distinct_values = []
     for instance in data:
         if instance[target_class] not in distinct_values:
             distinct_values.append(instance[target_class])
+    return distinct_values
+
+def getClassesSubsets(target_class, data):
+    distinct_values = getClassDistinctValues(target_class, data)
 
     class_subsets = {}
     for value in distinct_values:
@@ -75,6 +78,11 @@ def transformToList(list_of_lists):
 
 
 def crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size, b, k):
+    accuracy_values = []
+    precision_values = []
+    recall_values = []
+    fmeasure_values = []
+
     for i in range(k):
         training_set_folds = list(folds)
         training_set_folds.remove(folds[i])
@@ -92,22 +100,78 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
 
         # Usa o ensemble de B arvores para prever as instancias do fold i
         # (fold de teste) e avaliar desempenho do algoritmo (calcular Fmeasure)
+        true_positives, false_positives, false_negatives, true_negatives = evaluateForest(forest, test_set, target_class)
+        # print('true_positives = {0}, false_positives = {1}, false_negatives = {2}, true_negatives = {3}'.format(
+        #     true_positives, false_positives, false_negatives, true_negatives))
+        accuracy_values.append(calculateAccuracy(true_positives, true_negatives, false_positives, false_negatives))
 
-        ### se b < k, dá erro... o que deveria acontecer?
-        # if len(forest) == 0:
-        #     import ipdb; ipdb.set_trace()
-        #     print('a')
-        evaluateForest(forest, test_set, target_class)
+        precision_value = calculatePrecision(true_positives, false_positives)
+        precision_values.append(precision_value)
+
+        recall_value = calculateRecall(true_positives, false_negatives)
+        recall_values.append(recall_value)
+        fmeasure_values.append(calculateF1Measure(precision_value, recall_value))
+
+    accuracy = sum(accuracy_values)/len(accuracy_values)
+    precision = sum(precision_values)/len(precision_values)
+    recall = sum(recall_values)/len(recall_values)
+    fmeasure = sum(fmeasure_values)/len(fmeasure_values)
+
+    print('accuracy = {0}, precision = {1}, recall = {2}, f1-measure = {3}'.format(
+        accuracy, precision, recall, fmeasure))
 
 
 def evaluateForest(forest, test_set, target_class):
     instances_copy = list(test_set)
 
-    for instance in instances_copy:
-        correct_class = instance[target_class]
-        predicted_class = forestPredict(forest, instance)
-        print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
+    class_distinct_values = getClassDistinctValues(target_class, test_set)
 
+    true_positives = 0
+    false_positives = {}
+    true_negatives = {}
+    false_negatives = {}
+    # +, 0, -
+
+    for instance in instances_copy:
+        for value in class_distinct_values:
+            false_positives[value] = 0
+            true_negatives[value] = 0
+            false_negatives[value] = 0
+
+            correct_class = instance[target_class]
+            predicted_class = forestPredict(forest, instance)
+            #print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
+
+            if predicted_class == correct_class:
+                true_positives = true_positives + 1
+            else:
+                if predicted_class == value and correct_class != value:
+                    # false positive
+                    false_positives[value] = false_positives[value]  + 1
+                elif predicted_class != value and correct_class != value:
+                    # true negative
+                    true_negatives[value] = true_negatives[value] + 1
+                else:
+                    # false negative
+                    false_negatives[value] = false_negatives[value]  + 1
+
+    avg_false_positives = getAverageValue(false_positives)
+    avg_false_negatives = getAverageValue(false_negatives)
+    avg_true_negatives = getAverageValue(true_negatives)
+
+    return true_positives, avg_false_positives, avg_false_negatives, avg_true_negatives
+
+
+def getAverageValue(values_dict):
+    values_list = []
+    classes_count = 0
+    import ipdb; ipdb.set_trace()
+    for value in values_dict:
+        values_list.append(values_dict[value])
+        classes_count = classes_count + 1
+
+    avg_value = float(sum(values_list) / classes_count)
+    return avg_value
 
 def forestPredict(forest, instance):
     predictions = []
@@ -119,16 +183,16 @@ def forestPredict(forest, instance):
     return most_frequent_class
 
 
-def accuracy(true_positives, true_negatives, false_positives, false_negatives):
-    return double((true_positives + true_negatives)/(true_positives + true_negatives + false_positives + false_negatives))
+def calculateAccuracy(true_positives, true_negatives, false_positives, false_negatives):
+    return float((true_positives + true_negatives)/(true_positives + true_negatives + false_positives + false_negatives))
 
-def recall(true_positives, false_negatives):
-    return double((true_positives)/(true_positives + false_negatives))
+def calculateRecall(true_positives, false_negatives):
+    return float((true_positives)/(true_positives + false_negatives))
 
-def precision(true_positives, false_positives):
-    return double((true_positives)/(true_positives + false_positives))
+def calculatePrecision(true_positives, false_positives):
+    return float((true_positives)/(true_positives + false_positives))
 
-def f1Measure(precision, recall):
+def calculateF1Measure(precision, recall):
     return 2*((precision*recall)/(precision+recall))
 
 
