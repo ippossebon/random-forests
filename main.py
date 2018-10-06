@@ -231,11 +231,12 @@ def getDataFromFile(file_name):
             else:
                 instance = {}
                 for i in range(len(attributes)):
-                    try:
-                        instance[attributes[i]] = row[i]
-                    except Exception as e:
-                        import ipdb; ipdb.set_trace()
-                        print('a')
+                    instance[attributes[i]] = row[i]
+                    # try:
+                    #     instance[attributes[i]] = row[i]
+                    # except Exception as e:
+                    #     import ipdb; ipdb.set_trace()
+                    #     print('a')
 
 
                 instances.append(instance)
