@@ -148,10 +148,14 @@ class Tree(object):
     def decisionTree(self, instances, attributes, target_class, top_edge=None):
         """
         Função recursiva que cria uma árvore de decisão com base no conjunto
-        'instances' para atributos CATEGÓRICOS
+        'instances'
         """
         node = Node()
         node.top_edge = top_edge
+
+        # if len(instances) == 0:
+        #     import ipdb; ipdb.set_trace()
+        #     print('a')
 
         if self.haveSameClass(instances, target_class):
             # Se todos os exemplos do conjunto possuem a mesma classificação,

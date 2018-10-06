@@ -13,10 +13,21 @@ attributes_type = 'c' se os atributos são categóricos
 def main():
     file_name = './data/joga.csv'
     target_class = 'Joga'
+
     attributes, attributes_types, instances = getDataFromFile(file_name)
+    class_distinct_values = getClassDistinctValues(target_class, instances)
 
     folds = getKStratifiedFolds(instances, target_class, k=10)
-    crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size=10, b=20, k=10)
+    crossValidation(
+        attributes,
+        attributes_types,
+        target_class,
+        class_distinct_values,
+        folds,
+        bootstrap_size=5,
+        b=20,
+        k=5
+    )
 
 
 def getBootstrap(data_set, size):
@@ -77,7 +88,7 @@ def transformToList(list_of_lists):
     return new_list
 
 
-def crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size, b, k):
+def crossValidation(attributes, attributes_types, target_class, class_distinct_values, folds, bootstrap_size, b, k):
     accuracy_values = []
     precision_values = []
     recall_values = []
@@ -100,7 +111,7 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
 
         # Usa o ensemble de B arvores para prever as instancias do fold i
         # (fold de teste) e avaliar desempenho do algoritmo (calcular Fmeasure)
-        true_positives, false_positives, false_negatives, true_negatives = evaluateForest(forest, test_set, target_class)
+        true_positives, false_positives, false_negatives, true_negatives = evaluateForest(forest, test_set, target_class, class_distinct_values)
         # print('true_positives = {0}, false_positives = {1}, false_negatives = {2}, true_negatives = {3}'.format(
         #     true_positives, false_positives, false_negatives, true_negatives))
         accuracy_values.append(calculateAccuracy(true_positives, true_negatives, false_positives, false_negatives))
@@ -121,10 +132,8 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
         accuracy, precision, recall, fmeasure))
 
 
-def evaluateForest(forest, test_set, target_class):
+def evaluateForest(forest, test_set, target_class, class_distinct_values):
     instances_copy = list(test_set)
-
-    class_distinct_values = getClassDistinctValues(target_class, test_set)
 
     true_positives = 0
     false_positives = {}
@@ -163,9 +172,12 @@ def evaluateForest(forest, test_set, target_class):
 
 
 def getAverageValue(values_dict):
+    if len(values_dict) == 0:
+        return 0
+
     values_list = []
     classes_count = 0
-    import ipdb; ipdb.set_trace()
+
     for value in values_dict:
         values_list.append(values_dict[value])
         classes_count = classes_count + 1
