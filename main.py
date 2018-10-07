@@ -13,7 +13,7 @@ attributes_type = 'c' se os atributos são categóricos
 def main():
     #showDecisionTreeCorrectness()
 
-    file_name = './data/wine.csv'
+    file_name = './data/wdbc-without-id.csv'
     target_class = 'class'
 
     attributes, attributes_types, instances = getDataFromFile(file_name)
@@ -245,12 +245,6 @@ def getDataFromFile(file_name):
                 instance = {}
                 for i in range(len(attributes)):
                     instance[attributes[i]] = row[i]
-                    # try:
-                    #     instance[attributes[i]] = row[i]
-                    # except Exception as e:
-                    #     import ipdb; ipdb.set_trace()
-                    #     print('a')
-
 
                 instances.append(instance)
             line_count = line_count + 1
