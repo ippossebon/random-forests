@@ -1,5 +1,8 @@
 import csv
 import random
+import math
+#import Tkinter
+import matplotlib.pyplot as plt
 
 from node import Node
 from tree import Tree
@@ -11,38 +14,49 @@ attributes_type = 'c' se os atributos são categóricos
 """
 
 def main():
-    #showDecisionTreeCorrectness()
-
-    file_name = './data/wdbc-without-id.csv'
-    target_class = 'class'
-
+    file_name = './data/buys-computer.csv'
+    target_class = 'buysComputer'
     attributes, attributes_types, instances = getDataFromFile(file_name)
-    class_distinct_values = getClassDistinctValues(target_class, instances)
 
-    folds = getKStratifiedFolds(instances, target_class, k=10)
-    crossValidation(
-        attributes,
-        attributes_types,
-        target_class,
-        class_distinct_values,
-        folds,
-        bootstrap_size=10,
-        b=20,
-        k=10
-    )
+    results_accuracy = []
+    results_precision = []
+    results_recall = []
+    results_fmeasure = []
 
-def showDecisionTreeCorrectness():
-    file_name = './data/joga.csv'
-    target_class = 'Joga'
+    #folds = getKStratifiedFolds(instances, target_class, k=10)
+    #results = crossValidation(attributes,
+    #                attributes_types,
+    #                target_class, folds,
+    #                bootstrap_size=10,
+    #                b=10,
+    #                k=10)
 
-    attributes, attributes_types, instances = getDataFromFile(file_name)
-    class_distinct_values = getClassDistinctValues(target_class, instances)
+    for i in range(10, 31):
+        folds = getKStratifiedFolds(instances, target_class, k=i)
+        results = crossValidation(attributes,
+                        attributes_types,
+                        target_class, folds,
+                        bootstrap_size=10,
+                        b=i,
+                        k=i)
+        results_accuracy.append(results[0])
+        results_precision.append(results[1])
+        results_recall.append(results[2])
+        results_fmeasure.append(results[3])
 
-    tree = Tree(attributes, attributes_types, target_class, instances)
-    tree.createDecisionTree()
-    tree.printDecisionTree()
+    xint = range(min(range(10,31)), math.ceil(max(range(10,31)))+1)
 
-
+    plt.xticks(xint)
+    plt.plot(range(10,31), results_accuracy, label = "Accuracy")
+    plt.plot(range(10,31), results_precision, label="Precision")
+    plt.plot(range(10,31), results_recall, label="Recall")
+    plt.plot(range(10,31), results_fmeasure, label="F-Measure")
+    plt.ylabel('Results')
+    plt.xlabel('Number of trees/ k folders')
+    plt.title('Results for' + file_name)
+    # show a legend on the plot
+    plt.legend()
+    plt.show()
 
 def getBootstrap(data_set, size):
     bootstrap = []
@@ -90,11 +104,6 @@ def getKStratifiedFolds(data_set, target_class, k):
             folds[fold_index].append(instance)
             instance_index = instance_index + 1
 
-    if [] in folds:
-        # k é muito pequeno!
-        print('ERRO: o valor de K é muito pequeno para este data set.')
-        exit(1)
-
     return folds
 
 
@@ -107,7 +116,7 @@ def transformToList(list_of_lists):
     return new_list
 
 
-def crossValidation(attributes, attributes_types, target_class, class_distinct_values, folds, bootstrap_size, b, k):
+def crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size, b, k):
     accuracy_values = []
     precision_values = []
     recall_values = []
@@ -130,7 +139,7 @@ def crossValidation(attributes, attributes_types, target_class, class_distinct_v
 
         # Usa o ensemble de B arvores para prever as instancias do fold i
         # (fold de teste) e avaliar desempenho do algoritmo (calcular Fmeasure)
-        true_positives, false_positives, false_negatives, true_negatives = evaluateForest(forest, test_set, target_class, class_distinct_values)
+        true_positives, false_positives, false_negatives, true_negatives = evaluateForest(forest, test_set, target_class)
         # print('true_positives = {0}, false_positives = {1}, false_negatives = {2}, true_negatives = {3}'.format(
         #     true_positives, false_positives, false_negatives, true_negatives))
         accuracy_values.append(calculateAccuracy(true_positives, true_negatives, false_positives, false_negatives))
@@ -150,14 +159,18 @@ def crossValidation(attributes, attributes_types, target_class, class_distinct_v
     print('accuracy = {0}, precision = {1}, recall = {2}, f1-measure = {3}'.format(
         accuracy, precision, recall, fmeasure))
 
+    return accuracy, precision, recall, fmeasure
 
-def evaluateForest(forest, test_set, target_class, class_distinct_values):
+def evaluateForest(forest, test_set, target_class):
     instances_copy = list(test_set)
+
+    class_distinct_values = getClassDistinctValues(target_class, test_set)
 
     true_positives = 0
     false_positives = {}
     true_negatives = {}
     false_negatives = {}
+    # +, 0, -
 
     for instance in instances_copy:
         for value in class_distinct_values:
@@ -190,12 +203,9 @@ def evaluateForest(forest, test_set, target_class, class_distinct_values):
 
 
 def getAverageValue(values_dict):
-    if len(values_dict) == 0:
-        return 0
-
     values_list = []
     classes_count = 0
-
+    #import ipdb; ipdb.set_trace()
     for value in values_dict:
         values_list.append(values_dict[value])
         classes_count = classes_count + 1
