@@ -1,7 +1,6 @@
 import csv
 import random
 import math
-#import Tkinter
 import matplotlib.pyplot as plt
 
 from node import Node
@@ -14,14 +13,14 @@ attributes_type = 'c' se os atributos são categóricos
 """
 
 def main():
-    file_name = './data/buys-computer.csv'
-    target_class = 'buysComputer'
+    file_name = './data/wdbc-without-id.csv'
+    target_class = 'class'
     attributes, attributes_types, instances = getDataFromFile(file_name)
 
     results_accuracy = []
     results_precision = []
     results_recall = []
-    results_fmeasure = []
+    results_f1measure = []
 
     #folds = getKStratifiedFolds(instances, target_class, k=10)
     #results = crossValidation(attributes,
@@ -31,7 +30,7 @@ def main():
     #                b=10,
     #                k=10)
 
-    for i in range(10, 31):
+    for i in range(2, 31):
         folds = getKStratifiedFolds(instances, target_class, k=i)
         results = crossValidation(attributes,
                         attributes_types,
@@ -42,15 +41,15 @@ def main():
         results_accuracy.append(results[0])
         results_precision.append(results[1])
         results_recall.append(results[2])
-        results_fmeasure.append(results[3])
+        results_f1measure.append(results[3])
 
-    xint = range(min(range(10,31)), math.ceil(max(range(10,31)))+1)
+    xint = range(min(range(2,31)), math.ceil(max(range(1,31)))+1)
 
     plt.xticks(xint)
-    plt.plot(range(10,31), results_accuracy, label = "Accuracy")
-    plt.plot(range(10,31), results_precision, label="Precision")
-    plt.plot(range(10,31), results_recall, label="Recall")
-    plt.plot(range(10,31), results_fmeasure, label="F-Measure")
+    plt.plot(range(2,31), results_accuracy, label = "Accuracy")
+    plt.plot(range(2,31), results_precision, label="Precision")
+    plt.plot(range(2,31), results_recall, label="Recall")
+    plt.plot(range(2,31), results_f1measure, label="F1-Measure")
     plt.ylabel('Results')
     plt.xlabel('Number of trees/ k folders')
     plt.title('Results for' + file_name)
@@ -156,8 +155,8 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
     recall = sum(recall_values)/len(recall_values)
     fmeasure = sum(fmeasure_values)/len(fmeasure_values)
 
-    print('accuracy = {0}, precision = {1}, recall = {2}, f1-measure = {3}'.format(
-        accuracy, precision, recall, fmeasure))
+    #print('accuracy = {0}, precision = {1}, recall = {2}, f1-measure = {3}'.format(
+        #accuracy, precision, recall, fmeasure))
 
     return accuracy, precision, recall, fmeasure
 
