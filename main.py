@@ -2,6 +2,7 @@ import csv
 import random
 import math
 import matplotlib.pyplot as plt
+import numpy as np
 
 from node import Node
 from tree import Tree
@@ -13,7 +14,7 @@ attributes_type = 'c' se os atributos são categóricos
 """
 
 def main():
-    file_name = './data/wdbc-without-id.csv'
+    file_name = './data/ionosphere.csv'
     target_class = 'class'
     attributes, attributes_types, instances = getDataFromFile(file_name)
 
@@ -22,38 +23,27 @@ def main():
     results_recall = []
     results_f1measure = []
 
-    #folds = getKStratifiedFolds(instances, target_class, k=10)
-    #results = crossValidation(attributes,
-    #                attributes_types,
-    #                target_class, folds,
-    #                bootstrap_size=10,
-    #                b=10,
-    #                k=10)
-
-    for i in range(2, 31):
-        folds = getKStratifiedFolds(instances, target_class, k=i)
+    for i in range(10, 51):
+        folds = getKStratifiedFolds(instances, target_class, k=10)
         results = crossValidation(attributes,
                         attributes_types,
                         target_class, folds,
                         bootstrap_size=10,
                         b=i,
-                        k=i)
+                        k=10)
         results_accuracy.append(results[0])
         results_precision.append(results[1])
         results_recall.append(results[2])
         results_f1measure.append(results[3])
 
-    xint = range(min(range(2,31)), math.ceil(max(range(1,31)))+1)
-
-    plt.xticks(xint)
-    plt.plot(range(2,31), results_accuracy, label = "Accuracy")
-    plt.plot(range(2,31), results_precision, label="Precision")
-    plt.plot(range(2,31), results_recall, label="Recall")
-    plt.plot(range(2,31), results_f1measure, label="F1-Measure")
-    plt.ylabel('Results')
-    plt.xlabel('Number of trees/ k folders')
+    plt.xticks(np.arange(min(range(10, 51)), max(range(10, 51))+1, 5.0))
+    plt.plot(range(10,51), results_accuracy, label = "Accuracy")
+    plt.plot(range(10,51), results_precision, label = "Precision")
+    plt.plot(range(10,51), results_recall, label = "Recall")
+    plt.plot(range(10,51), results_f1measure, label = "F1-Measure")
+    plt.ylabel('Values')
+    plt.xlabel('Number of trees')
     plt.title('Results for' + file_name)
-    # show a legend on the plot
     plt.legend()
     plt.show()
 
