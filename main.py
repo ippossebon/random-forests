@@ -1,8 +1,8 @@
 import csv
 import random
 import math
-import matplotlib.pyplot as plt
-import numpy as np
+# import matplotlib.pyplot as plt
+# import numpy as np
 
 from node import Node
 from tree import Tree
@@ -23,14 +23,17 @@ def main():
     results_recall = []
     results_f1measure = []
 
-    for i in range(10, 51):
-        folds = getKStratifiedFolds(instances, target_class, k=10)
+    k = 10
+    n_max_trees = 50
+
+    for i in range(1,n_max_trees):
+        folds = getKStratifiedFolds(instances, target_class, k=k)
         results = crossValidation(attributes,
                         attributes_types,
                         target_class, folds,
-                        bootstrap_size=10,
+                        bootstrap_size=k,
                         b=i,
-                        k=10)
+                        k=k)
         results_accuracy.append(results[0])
         results_precision.append(results[1])
         results_recall.append(results[2])
@@ -111,6 +114,7 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
     recall_values = []
     fmeasure_values = []
 
+
     for i in range(k):
         training_set_folds = list(folds)
         training_set_folds.remove(folds[i])
@@ -119,8 +123,9 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
         test_set = folds[i]
         forest = []
 
-        for b in range(b):
+        for j in range(b):
             bootstrap = getBootstrap(training_set, bootstrap_size)
+
             tree = Tree(attributes, attributes_types, target_class, bootstrap)
             tree.createDecisionTree()
 
@@ -194,7 +199,7 @@ def evaluateForest(forest, test_set, target_class):
 def getAverageValue(values_dict):
     values_list = []
     classes_count = 0
-    #import ipdb; ipdb.set_trace()
+
     for value in values_dict:
         values_list.append(values_dict[value])
         classes_count = classes_count + 1
