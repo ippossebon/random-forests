@@ -2,6 +2,8 @@ import csv
 import random
 import math
 import statistics
+import jsonpickle
+
 # import matplotlib.pyplot as plt
 # import numpy as np
 
@@ -18,6 +20,13 @@ def main():
     file_name = './data/wine.csv'
     target_class = 'class'
     attributes, attributes_types, instances = getDataFromFile(file_name)
+
+    tree = Tree(attributes, attributes_types, target_class, instances)
+    tree.createDecisionTree()
+
+    json_tree = jsonpickle.encode(tree.decision_tree)
+    import ipdb; ipdb.set_trace()
+
 
     results_accuracy = []
     results_precision = []
@@ -38,7 +47,7 @@ def main():
                             attributes_types,
                             target_class,
                             folds,
-                            b=n_trees,
+                            b=10,
                             k=k)
             accuracy.append(results[0])
             precision.append(results[1])
@@ -150,7 +159,8 @@ def crossValidation(attributes, attributes_types, target_class, folds, b, k):
         # bootstrap tem o tamanho de um fold
         bootstrap_size = len(training_set)
 
-        test_set = folds[i]
+        # test_set = folds[i]
+        test_set = list(training_set)
         forest = []
 
         for j in range(b):
@@ -158,13 +168,15 @@ def crossValidation(attributes, attributes_types, target_class, folds, b, k):
             tree = Tree(attributes, attributes_types, target_class, bootstrap)
             tree.createDecisionTree()
 
+            # json_tree = jsonpickle.encode(tree.decision_tree)
+            # import ipdb; ipdb.set_trace()
+
             forest.append(tree)
 
         # Usa o ensemble de B arvores para prever as instancias do fold i
         # (fold de teste) e avaliar desempenho do algoritmo (calcular Fmeasure)
         true_positives, false_positives, false_negatives, true_negatives = evaluateForest(forest, test_set, target_class)
-        # print('true_positives = {0}, false_positives = {1}, false_negatives = {2}, true_negatives = {3}'.format(
-        #     true_positives, false_positives, false_negatives, true_negatives))
+
         accuracy_values.append(calculateAccuracy(true_positives, true_negatives, false_positives, false_negatives))
 
         precision_value = calculatePrecision(true_positives, false_positives)
@@ -199,10 +211,13 @@ def evaluateForest(forest, test_set, target_class):
     predictions = []
     correct_classes = []
 
+    # Para cada instância do conjunto de validação
     for instance in instances_copy:
         correct_class = instance[target_class]
         correct_classes.append(correct_class)
+
         predicted_class = forestPredict(forest, instance)
+
         predictions.append(predicted_class)
 
     for i in range(len(predictions)):
@@ -211,13 +226,15 @@ def evaluateForest(forest, test_set, target_class):
         else:
             for value in class_distinct_values:
                 if correct_classes[i] == value and predictions[i] != value:
-                    # falso neagtivo
+                    # falso negativo
                     false_negatives[value] = false_negatives[value] + 1
                 elif correct_classes[i] != value and predictions[i] == value:
                     # falso positivo
                     false_positives[value] = false_positives[value]  + 1
                 elif correct_classes[i] != value and predictions[i] != value:
+                    # verdadeiro negativo
                     true_negatives[value] = true_negatives[value] + 1
+
 
     avg_false_positives = getAverageValue(false_positives)
     avg_false_negatives = getAverageValue(false_negatives)
@@ -244,6 +261,7 @@ def forestPredict(forest, instance):
         predictions.append(tree.classify(instance))
 
     most_frequent_class = max(set(predictions), key=predictions.count)
+
     return most_frequent_class
 
 

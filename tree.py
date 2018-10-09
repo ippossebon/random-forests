@@ -18,32 +18,56 @@ class Tree(object):
 
         self.decision_tree = self.decisionTree(self.instances, self.attributes, self.target_class)
 
+
     def getBestAttribute(self, attributes, instances):
         """
         Retorna o atributo com o maior ganho de informação, seguindo o algoritmo ID3.
         """
 
         original_set_entropy = self.entropy(instances, self.target_class)
-        attributes_information_gain = [0 for i in range(len(attributes))]
 
-        for i in range(len(attributes)):
-            # Pega todos os valores possíveis para o atributo em questão
-            possible_values = self.getDistinctValuesForAttribute(attributes[i], instances)
-            avg_entropy = 0
+        attributes_information_gain = {}
 
-            # Calcula entropia ponderada para cada subset originado a partir do atributo
-            for value in possible_values:
-                subset = self.getSubsetWithAttributeValue(attributes[i], value, instances)
-                entropy = self.entropy(subset, self.target_class)
-                weighted_entropy = float(entropy * (len(subset)/len(instances)))
+        for attribute in attributes:
+            if self.attributes_types[attribute] == 'c':
+                #Pega todos os valores possíveis para o atributo em questão
+                possible_values = self.getDistinctValuesForAttribute(attribute, instances)
+                avg_entropy = 0
+
+                # Calcula entropia ponderada para cada subset originado a partir do atributo
+                for value in possible_values:
+                    subset = self.getSubsetWithAttributeValue(attributes[i], value, instances)
+                    entropy = self.entropy(subset, self.target_class)
+                    weighted_entropy = float(entropy * (len(subset)/len(instances)))
+                    avg_entropy = avg_entropy + weighted_entropy
+
+                info_gain = original_set_entropy - avg_entropy
+                attributes_information_gain[attribute] = info_gain
+            else:
+                # atributo numérico
+                # Gera os subconjuntos do atributo com base no seu ponto médio
+                values_sum = 0
+                for instance in instances:
+                    values_sum = values_sum + float(instance[attribute])
+
+                avg_value = values_sum / len(instances)
+                subset_A, subset_B = self.getSubsetsForNumericAttribute(attribute, avg_value, instances)
+
+                subset_A_entropy = self.entropy(subset_A, self.target_class)
+                subset_B_entropy = self.entropy(subset_B, self.target_class)
+
+                weighted_entropy_A = float(subset_A_entropy * (len(subset_A)/len(instances)))
+                weighted_entropy_B = float(subset_B_entropy * (len(subset_B)/len(instances)))
+                weighted_entropy = weighted_entropy_A + weighted_entropy_B
+
                 avg_entropy = avg_entropy + weighted_entropy
+                info_gain = original_set_entropy - avg_entropy
+                attributes_information_gain[attribute] = info_gain
 
-            info_gain = original_set_entropy - avg_entropy
-            attributes_information_gain[i] = info_gain
+        best_attribute = max(attributes_information_gain, key=attributes_information_gain.get)
 
-        best_attribute_index = attributes_information_gain.index(max(attributes_information_gain))
+        return best_attribute, attributes_information_gain[best_attribute]
 
-        return attributes[best_attribute_index], max(attributes_information_gain)
 
     def entropy(self, instances, target_class):
         # Medida do grau de aleatoriedade de uma variável, dada em bits
@@ -145,6 +169,7 @@ class Tree(object):
 
         return random_attributes
 
+
     def decisionTree(self, instances, attributes, target_class, top_edge=None):
         """
         Função recursiva que cria uma árvore de decisão com base no conjunto
@@ -172,19 +197,18 @@ class Tree(object):
             return node
         else:
             # Seleciona m atributos aleatórios e escolhe o melhor
-            # ! IMPORTANTE: para demonstrar que o algoritmo de indução de árvores funciona,
-            # deve selecionar entre TODOS os atributos, e não apenas entre aleatórios
-
             m = int(math.sqrt(len(attributes)))
-            random_attributes = self.getRandomAttributes(attributes, m)
-            attribute, info_gain = self.getBestAttribute(random_attributes, instances)
+            # random_attributes = self.getRandomAttributes(attributes, m)
+            import ipdb; ipdb.set_trace()
+
+            attribute, info_gain = self.getBestAttribute(attributes, instances)
+            import ipdb; ipdb.set_trace()
 
             node.value = attribute
             node.info_gain = info_gain
 
             attributes.remove(attribute)
 
-            # considerando attributes como um dict
             if self.attributes_types[attribute] == 'n':
                 # atributo numerico
                 values_sum = 0
@@ -197,8 +221,8 @@ class Tree(object):
                 subset_A_attribute_value = '<= ' + str(avg_value)
                 subset_B_attribute_value = '> ' + str(avg_value)
 
-                node.children.append(self.decisionTree(subset_A, attributes, target_class, subset_A_attribute_value))
-                node.children.append(self.decisionTree(subset_B, attributes, target_class, subset_B_attribute_value))
+                node.children.append(self.decisionTree(subset_A, attributes[:], target_class, subset_A_attribute_value))
+                node.children.append(self.decisionTree(subset_B, attributes[:], target_class, subset_B_attribute_value))
             else:
                 # Para cada valor V distinto do atributo em questão, considerando os exemplos da lista de instancias:
                 distinct_attribute_values = self.getDistinctValuesForAttribute(attribute, instances)
@@ -212,7 +236,7 @@ class Tree(object):
                         node.value = self.getMostFrequentClass(instances, target_class)
                         return node
                     else:
-                        node.children.append(self.decisionTree(subset, attributes, target_class, attribute_value))
+                        node.children.append(self.decisionTree(subset, attributes[:], target_class, attribute_value))
         return node
 
     def getSubsetsForNumericAttribute(self, attribute, split_value, instances):
