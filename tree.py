@@ -131,15 +131,15 @@ class Tree(object):
 
         return subset
 
-    def getRandomAttributes(self, attributes, m=None):
+    def getRandomAttributes(self, attributes, m):
         """
         Retorna m atributos aleatórios da lista de atributos
         valor default de m = sqrt(len(attributes))
         """
         random_attributes = []
-        random_attributes_count = m or int(math.sqrt(len(attributes)))
+        # random_attributes_count = m or int(math.sqrt(len(attributes)))
 
-        for x in range(random_attributes_count):
+        for x in range(m):
             index = random.randint(0, len(attributes)-1)
             random_attributes.append(attributes[index])
 
@@ -175,9 +175,10 @@ class Tree(object):
             # ! IMPORTANTE: para demonstrar que o algoritmo de indução de árvores funciona,
             # deve selecionar entre TODOS os atributos, e não apenas entre aleatórios
 
-            random_attributes = self.getRandomAttributes(attributes)
-            # attribute, info_gain = self.getBestAttribute(random_attributes, instances)
-            attribute, info_gain = self.getBestAttribute(attributes, instances)
+            m = int(math.sqrt(len(attributes)))
+            random_attributes = self.getRandomAttributes(attributes, m)
+            attribute, info_gain = self.getBestAttribute(random_attributes, instances)
+
             node.value = attribute
             node.info_gain = info_gain
 

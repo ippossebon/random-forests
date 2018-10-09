@@ -24,9 +24,9 @@ def main():
     results_f1measure = []
 
     k = 10
-    n_max_trees = 50
 
-    for i in range(1,n_max_trees):
+    for i in range(1,10):
+        import ipdb; ipdb.set_trace()
         folds = getKStratifiedFolds(instances, target_class, k=k)
         results = crossValidation(attributes,
                         attributes_types,
@@ -39,16 +39,17 @@ def main():
         results_recall.append(results[2])
         results_f1measure.append(results[3])
 
-    plt.xticks(np.arange(min(range(10, 51)), max(range(10, 51))+1, 5.0))
-    plt.plot(range(10,51), results_accuracy, label = "Accuracy")
-    plt.plot(range(10,51), results_precision, label = "Precision")
-    plt.plot(range(10,51), results_recall, label = "Recall")
-    plt.plot(range(10,51), results_f1measure, label = "F1-Measure")
-    plt.ylabel('Values')
-    plt.xlabel('Number of trees')
-    plt.title('Results for' + file_name)
-    plt.legend()
-    plt.show()
+
+    # plt.xticks(np.arange(min(range(10, 51)), max(range(10, 51))+1, 5.0))
+    # plt.plot(range(10,51), results_accuracy, label = "Accuracy")
+    # plt.plot(range(10,51), results_precision, label = "Precision")
+    # plt.plot(range(10,51), results_recall, label = "Recall")
+    # plt.plot(range(10,51), results_f1measure, label = "F1-Measure")
+    # plt.ylabel('Values')
+    # plt.xlabel('Number of trees')
+    # plt.title('Results for' + file_name)
+    # plt.legend()
+    # plt.show()
 
 def getBootstrap(data_set, size):
     bootstrap = []
@@ -138,6 +139,8 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
         #     true_positives, false_positives, false_negatives, true_negatives))
         accuracy_values.append(calculateAccuracy(true_positives, true_negatives, false_positives, false_negatives))
 
+
+        import ipdb; ipdb.set_trace()
         precision_value = calculatePrecision(true_positives, false_positives)
         precision_values.append(precision_value)
 
@@ -174,6 +177,7 @@ def evaluateForest(forest, test_set, target_class):
 
             correct_class = instance[target_class]
             predicted_class = forestPredict(forest, instance)
+            import ipdb; ipdb.set_trace()
             #print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
 
             if predicted_class == correct_class:
@@ -227,7 +231,7 @@ def calculatePrecision(true_positives, false_positives):
     return float((true_positives)/(true_positives + false_positives))
 
 def calculateF1Measure(precision, recall):
-    return 2*((precision*recall)/(precision+recall))
+    return ((2*precision*recall)/(precision+recall))
 
 
 # Retorna a lista de atributos e um dicionário de instâncias do problema
