@@ -1,6 +1,7 @@
 import csv
 import random
 import math
+import statistics
 # import matplotlib.pyplot as plt
 # import numpy as np
 
@@ -14,7 +15,7 @@ attributes_type = 'c' se os atributos são categóricos
 """
 
 def main():
-    file_name = './data/ionosphere.csv'
+    file_name = './data/wine.csv'
     target_class = 'class'
     attributes, attributes_types, instances = getDataFromFile(file_name)
 
@@ -25,19 +26,43 @@ def main():
 
     k = 10
 
-    for i in range(1,10):
-        import ipdb; ipdb.set_trace()
-        folds = getKStratifiedFolds(instances, target_class, k=k)
-        results = crossValidation(attributes,
-                        attributes_types,
-                        target_class, folds,
-                        bootstrap_size=k,
-                        b=i,
-                        k=k)
-        results_accuracy.append(results[0])
-        results_precision.append(results[1])
-        results_recall.append(results[2])
-        results_f1measure.append(results[3])
+    for n_trees in range(1,51):
+        accuracy = []
+        precision = []
+        recall = []
+        f1 = []
+
+        for j in range(5): # gera 5 vezes o mesmo dado
+            folds = getKStratifiedFolds(instances, target_class, k=k)
+            results = crossValidation(attributes,
+                            attributes_types,
+                            target_class,
+                            folds,
+                            b=n_trees,
+                            k=k)
+            accuracy.append(results[0])
+            precision.append(results[1])
+            recall.append(results[2])
+            f1.append(results[3])
+
+        accuracy_mean = statistics.mean(accuracy)
+        accuracy_stdev = statistics.stdev(accuracy)
+        precision_mean = statistics.mean(precision)
+        precision_stdev = statistics.stdev(precision)
+        recall_mean = statistics.mean(recall)
+        recall_stdev = statistics.stdev(recall)
+        f1_mean = statistics.mean(f1)
+        f1_stdev = statistics.stdev(f1)
+
+
+        # results_accuracy.append(results[0])
+        # results_precision.append(results[1])
+        # results_recall.append(results[2])
+        # results_f1measure.append(results[3])
+
+        print(str(n_trees) + ' arvores -> '
+            + 'acc media = ' + str(accuracy_mean) + ' std = ' + str(accuracy_stdev)
+            + '    f1 media = ' + str(f1_mean)  + ' std = ' + str(f1_stdev))
 
 
     # plt.xticks(np.arange(min(range(10, 51)), max(range(10, 51))+1, 5.0))
@@ -66,6 +91,7 @@ def getClassDistinctValues(target_class, data):
         if instance[target_class] not in distinct_values:
             distinct_values.append(instance[target_class])
     return distinct_values
+
 
 def getClassesSubsets(target_class, data):
     distinct_values = getClassDistinctValues(target_class, data)
@@ -109,7 +135,7 @@ def transformToList(list_of_lists):
     return new_list
 
 
-def crossValidation(attributes, attributes_types, target_class, folds, bootstrap_size, b, k):
+def crossValidation(attributes, attributes_types, target_class, folds, b, k):
     accuracy_values = []
     precision_values = []
     recall_values = []
@@ -121,12 +147,14 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
         training_set_folds.remove(folds[i])
         training_set = transformToList(training_set_folds)
 
+        # bootstrap tem o tamanho de um fold
+        bootstrap_size = len(training_set)
+
         test_set = folds[i]
         forest = []
 
         for j in range(b):
             bootstrap = getBootstrap(training_set, bootstrap_size)
-
             tree = Tree(attributes, attributes_types, target_class, bootstrap)
             tree.createDecisionTree()
 
@@ -139,8 +167,6 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
         #     true_positives, false_positives, false_negatives, true_negatives))
         accuracy_values.append(calculateAccuracy(true_positives, true_negatives, false_positives, false_negatives))
 
-
-        import ipdb; ipdb.set_trace()
         precision_value = calculatePrecision(true_positives, false_positives)
         precision_values.append(precision_value)
 
@@ -153,9 +179,6 @@ def crossValidation(attributes, attributes_types, target_class, folds, bootstrap
     recall = sum(recall_values)/len(recall_values)
     fmeasure = sum(fmeasure_values)/len(fmeasure_values)
 
-    #print('accuracy = {0}, precision = {1}, recall = {2}, f1-measure = {3}'.format(
-        #accuracy, precision, recall, fmeasure))
-
     return accuracy, precision, recall, fmeasure
 
 def evaluateForest(forest, test_set, target_class):
@@ -167,31 +190,34 @@ def evaluateForest(forest, test_set, target_class):
     false_positives = {}
     true_negatives = {}
     false_negatives = {}
-    # +, 0, -
+
+    for value in class_distinct_values:
+        false_positives[value] = 0
+        true_negatives[value] = 0
+        false_negatives[value] = 0
+
+    predictions = []
+    correct_classes = []
 
     for instance in instances_copy:
-        for value in class_distinct_values:
-            false_positives[value] = 0
-            true_negatives[value] = 0
-            false_negatives[value] = 0
+        correct_class = instance[target_class]
+        correct_classes.append(correct_class)
+        predicted_class = forestPredict(forest, instance)
+        predictions.append(predicted_class)
 
-            correct_class = instance[target_class]
-            predicted_class = forestPredict(forest, instance)
-            import ipdb; ipdb.set_trace()
-            #print('Predição: ' + predicted_class + ' -- Classe correta: ' + correct_class)
-
-            if predicted_class == correct_class:
-                true_positives = true_positives + 1
-            else:
-                if predicted_class == value and correct_class != value:
-                    # false positive
+    for i in range(len(predictions)):
+        if predictions[i] == correct_classes[i]:
+            true_positives = true_positives + 1
+        else:
+            for value in class_distinct_values:
+                if correct_classes[i] == value and predictions[i] != value:
+                    # falso neagtivo
+                    false_negatives[value] = false_negatives[value] + 1
+                elif correct_classes[i] != value and predictions[i] == value:
+                    # falso positivo
                     false_positives[value] = false_positives[value]  + 1
-                elif predicted_class != value and correct_class != value:
-                    # true negative
+                elif correct_classes[i] != value and predictions[i] != value:
                     true_negatives[value] = true_negatives[value] + 1
-                else:
-                    # false negative
-                    false_negatives[value] = false_negatives[value]  + 1
 
     avg_false_positives = getAverageValue(false_positives)
     avg_false_negatives = getAverageValue(false_negatives)
@@ -231,7 +257,7 @@ def calculatePrecision(true_positives, false_positives):
     return float((true_positives)/(true_positives + false_positives))
 
 def calculateF1Measure(precision, recall):
-    return ((2*precision*recall)/(precision+recall))
+    return float((2*precision*recall)/(precision+recall))
 
 
 # Retorna a lista de atributos e um dicionário de instâncias do problema
