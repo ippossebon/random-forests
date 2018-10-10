@@ -10,7 +10,6 @@ class Tree(object):
         self.target_class = target_class
         self.instances = instances
         self.decision_tree = None
-        self.predicted_class = None
 
     def createDecisionTree(self):
         if self.target_class in self.attributes:
@@ -50,7 +49,7 @@ class Tree(object):
                 for instance in instances:
                     values_sum = values_sum + float(instance[attribute])
 
-                avg_value = values_sum / len(instances)
+                avg_value = float(values_sum / len(instances))
                 subset_A, subset_B = self.getSubsetsForNumericAttribute(attribute, avg_value, instances)
 
                 subset_A_entropy = self.entropy(subset_A, self.target_class)
@@ -60,8 +59,7 @@ class Tree(object):
                 weighted_entropy_B = float(subset_B_entropy * (len(subset_B)/len(instances)))
                 weighted_entropy = weighted_entropy_A + weighted_entropy_B
 
-                avg_entropy = avg_entropy + weighted_entropy
-                info_gain = original_set_entropy - avg_entropy
+                info_gain = original_set_entropy - weighted_entropy
                 attributes_information_gain[attribute] = info_gain
 
         best_attribute = max(attributes_information_gain, key=attributes_information_gain.get)
@@ -199,10 +197,8 @@ class Tree(object):
             # Seleciona m atributos aleatórios e escolhe o melhor
             m = int(math.sqrt(len(attributes)))
             # random_attributes = self.getRandomAttributes(attributes, m)
-            import ipdb; ipdb.set_trace()
 
             attribute, info_gain = self.getBestAttribute(attributes, instances)
-            import ipdb; ipdb.set_trace()
 
             node.value = attribute
             node.info_gain = info_gain

@@ -13,7 +13,6 @@ from tree import Tree
 """
 attributes_type = 'n' se os atributos são numéricos
 attributes_type = 'c' se os atributos são categóricos
-
 """
 
 def main():
