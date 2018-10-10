@@ -23,10 +23,6 @@ def main():
     tree = Tree(attributes, attributes_types, target_class, instances)
     tree.createDecisionTree()
 
-    json_tree = jsonpickle.encode(tree.decision_tree)
-    import ipdb; ipdb.set_trace()
-
-
     results_accuracy = []
     results_precision = []
     results_recall = []
@@ -40,38 +36,19 @@ def main():
         recall = []
         f1 = []
 
-        for j in range(5): # gera 5 vezes o mesmo dado
-            folds = getKStratifiedFolds(instances, target_class, k=k)
-            results = crossValidation(attributes,
+        folds = getKStratifiedFolds(instances, target_class, k=k)
+        results = crossValidation(attributes,
                             attributes_types,
                             target_class,
                             folds,
-                            b=10,
+                            b=n_trees,
                             k=k)
-            accuracy.append(results[0])
-            precision.append(results[1])
-            recall.append(results[2])
-            f1.append(results[3])
+        print(results)
 
-        accuracy_mean = statistics.mean(accuracy)
-        accuracy_stdev = statistics.stdev(accuracy)
-        precision_mean = statistics.mean(precision)
-        precision_stdev = statistics.stdev(precision)
-        recall_mean = statistics.mean(recall)
-        recall_stdev = statistics.stdev(recall)
-        f1_mean = statistics.mean(f1)
-        f1_stdev = statistics.stdev(f1)
-
-
-        # results_accuracy.append(results[0])
-        # results_precision.append(results[1])
-        # results_recall.append(results[2])
-        # results_f1measure.append(results[3])
-
-        print(str(n_trees) + ' arvores -> '
-            + 'acc media = ' + str(accuracy_mean) + ' std = ' + str(accuracy_stdev)
-            + '    f1 media = ' + str(f1_mean)  + ' std = ' + str(f1_stdev))
-
+        results_accuracy.append(results[0])
+        results_precision.append(results[1])
+        results_recall.append(results[2])
+        results_f1measure.append(results[3])
 
     # plt.xticks(np.arange(min(range(10, 51)), max(range(10, 51))+1, 5.0))
     # plt.plot(range(10,51), results_accuracy, label = "Accuracy")
@@ -166,9 +143,6 @@ def crossValidation(attributes, attributes_types, target_class, folds, b, k):
             bootstrap = getBootstrap(training_set, bootstrap_size)
             tree = Tree(attributes, attributes_types, target_class, bootstrap)
             tree.createDecisionTree()
-
-            # json_tree = jsonpickle.encode(tree.decision_tree)
-            # import ipdb; ipdb.set_trace()
 
             forest.append(tree)
 
