@@ -159,7 +159,6 @@ class Tree(object):
         valor default de m = sqrt(len(attributes))
         """
         random_attributes = []
-        # random_attributes_count = m or int(math.sqrt(len(attributes)))
 
         for x in range(m):
             index = random.randint(0, len(attributes)-1)
@@ -196,9 +195,8 @@ class Tree(object):
         else:
             # Seleciona m atributos aleatórios e escolhe o melhor
             m = int(math.sqrt(len(attributes)))
-            # random_attributes = self.getRandomAttributes(attributes, m)
-
-            attribute, info_gain = self.getBestAttribute(attributes, instances)
+            random_attributes = self.getRandomAttributes(attributes, m)
+            attribute, info_gain = self.getBestAttribute(random_attributes, instances)
 
             node.value = attribute
             node.info_gain = info_gain

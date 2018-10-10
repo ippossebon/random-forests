@@ -30,25 +30,19 @@ def main():
 
     k = 10
 
-    for n_trees in range(1,51):
-        accuracy = []
-        precision = []
-        recall = []
-        f1 = []
-
-        folds = getKStratifiedFolds(instances, target_class, k=k)
-        results = crossValidation(attributes,
+    folds = getKStratifiedFolds(instances, target_class, k=k)
+    results = crossValidation(attributes,
                             attributes_types,
                             target_class,
                             folds,
-                            b=n_trees,
+                            b=5,
                             k=k)
-        print(results)
+    print(results)
 
-        results_accuracy.append(results[0])
-        results_precision.append(results[1])
-        results_recall.append(results[2])
-        results_f1measure.append(results[3])
+    results_accuracy.append(results[0])
+    results_precision.append(results[1])
+    results_recall.append(results[2])
+    results_f1measure.append(results[3])
 
     # plt.xticks(np.arange(min(range(10, 51)), max(range(10, 51))+1, 5.0))
     # plt.plot(range(10,51), results_accuracy, label = "Accuracy")
@@ -132,11 +126,10 @@ def crossValidation(attributes, attributes_types, target_class, folds, b, k):
         training_set_folds.remove(folds[i])
         training_set = transformToList(training_set_folds)
 
-        # bootstrap tem o tamanho de um fold
+        # bootstrap tem o tamanho do conjunto de treinamento
         bootstrap_size = len(training_set)
 
-        # test_set = folds[i]
-        test_set = list(training_set)
+        test_set = folds[i]
         forest = []
 
         for j in range(b):
@@ -147,7 +140,7 @@ def crossValidation(attributes, attributes_types, target_class, folds, b, k):
             forest.append(tree)
 
         # Usa o ensemble de B arvores para prever as instancias do fold i
-        # (fold de teste) e avaliar desempenho do algoritmo (calcular Fmeasure)
+        # (fold de teste) e avaliar desempenho do algoritmo
         true_positives, false_positives, false_negatives, true_negatives = evaluateForest(forest, test_set, target_class)
 
         accuracy_values.append(calculateAccuracy(true_positives, true_negatives, false_positives, false_negatives))
